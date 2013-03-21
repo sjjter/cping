@@ -19,7 +19,9 @@
 #       [Clem 29012013] new parameters can set the lower and upper value treshold of ping responce
 #                       default is 100ms to 200ms. In case of incorrect parameters the program assume
 #                       upper limit twise the lower.
-#	[Clem 07022913] after N lines replace the date and time with the pinging IP.
+#
+#       [Clem 21032013] now we can interact with the script using the Q key to quit the program and
+#                       using the p key to pause the command so you can scroll back the history.
 #
 
 
@@ -119,7 +121,30 @@ do
                         echo -n "$RestCur"
                         ;;
         esac
-        sleep 1
+        # Waiting for a character... for 1sec...
+        if read -s -n 1 -t 1; then
+                case $REPLY in
+                        p)
+                        # Pause...
+                        echo -n "$SaveCur"
+                        echo -n "$ErrorRed$InvChar Paused $BoldOff"
+                        # Wait for any key...
+                        while ( true); do
+                                if read -s -n 1 -t 1; then
+                                        break;
+                                fi
+                        done
+                        echo -n "     "
+                        echo -n "$RestCur"
+                        ;;
+                        Q)
+                        # Quit...
+                        break
+                        ;;
+                        *)
+                        ;;
+                esac
+        fi
 
         if [ $(($i%$ColSize)) = 0 ]; then
                 ((r+=1))
@@ -141,4 +166,3 @@ echo "$Bold % $success success... % $loss packet loss... $BoldOff"
 echo "$Bold $Cnt packets transmitted, $ok packet received $BoldOff"
 echo "$start - $end "
 exit
-
