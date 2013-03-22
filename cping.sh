@@ -23,6 +23,8 @@
 #       [Clem 21032013] now we can interact with the script using the Q key to quit the program and
 #                       using the p key to pause the command so you can scroll back the history.
 #
+#       [Clem 22032013] Added a timeout period to the pause. After 5min the script starts again.
+#
 
 
 hash tput &> /dev/null
@@ -40,6 +42,21 @@ function int_handler {
         echo "$Bold $i packets transmitted, $ok packet received $BoldOff"
         echo "$start - $end "
         exit
+}
+
+function get_tick()
+{
+        echo $(date '+%s')
+}
+
+function get_tickdiff()
+{
+        local  oldtm=$1
+        nowtm=$(date '+%s')
+
+        if [[ -z "$oldtm" ]]; then oldtm=nowtm; fi
+
+        echo $((nowtm - oldtm))
 }
 
 trap int_handler INT
@@ -129,8 +146,13 @@ do
                         echo -n "$SaveCur"
                         echo -n "$ErrorRed$InvChar Paused $BoldOff"
                         # Wait for any key...
+                        stm=$(get_tick)
                         while ( true); do
                                 if read -s -n 1 -t 1; then
+                                        break;
+                                fi
+                                #
+                                if [ $(get_tickdiff $stm) -gt 300 ]; then
                                         break;
                                 fi
                         done
