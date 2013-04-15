@@ -25,6 +25,10 @@
 #
 #       [Clem 22032013] Added a timeout period to the pause. After 5min the script starts again.
 #
+#       [Clem 04042013] Use the d key to print a snaps about received and loss packed
+#
+#       [Clem 15042013] Percentage now calculated with decimals with bc
+#
 
 
 hash tput &> /dev/null
@@ -36,11 +40,12 @@ fi
 function int_handler {
         echo
         end=$(date '+%Y-%m-%d %T' )
-        ((success=ok*100 / i ))
-        ((loss=notok*100 / i ))
+        success=$(echo "scale=2; $ok*100/$i" | bc -q 2>/dev/null)
+        loss=$(echo "scale=2; $notok*100/$i" | bc -q 2>/dev/null)
         echo "$Bold % $success success... % $loss packet loss... $BoldOff"
         echo "$Bold $i packets transmitted, $ok packet received $BoldOff"
         echo "$start - $end "
+        reset
         exit
 }
 
@@ -94,6 +99,7 @@ ok=0
 notok=0
 ((ColSize=ColSize-22))
 ((LineSize=LineSize/2))
+DateOrStat=0
 
 start=$(date '+%Y-%m-%d %T' )
 echo "Sending $Cnt Ping Packets to $Dest [Lower lmt:$Lvl1 ms, Upper lmt:$Lvl2 ms]"
@@ -159,6 +165,17 @@ do
                         echo -n "     "
                         echo -n "$RestCur"
                         ;;
+                        d)
+                        # Print a snapshot about stats
+                        loss=$(echo "scale=2; $notok*100/$i" | bc -q 2>/dev/null)
+                        echo -n "$SaveCur"
+                        echo -n "$Bold Rcvd: $ok, Loss: $notok % $loss $BoldOff"
+                        sleep 1
+                        echo -n "$RestCur"
+                        echo -n "$SaveCur"
+                        echo -n "$ClrEndLn"
+                        echo -n "$RestCur"
+                        ;;
                         Q)
                         # Quit...
                         break
@@ -182,8 +199,8 @@ done
 
 echo
 end=$(date '+%Y-%m-%d %T' )
-((success=ok*100 / Cnt ))
-((loss=notok*100 / Cnt ))
+success=$(echo "scale=2; $ok*100/$Cnt" | bc -q 2>/dev/null)
+loss=$(echo "scale=2; $notok*100/$Cnt" | bc -q 2>/dev/null)
 echo "$Bold % $success success... % $loss packet loss... $BoldOff"
 echo "$Bold $Cnt packets transmitted, $ok packet received $BoldOff"
 echo "$start - $end "
