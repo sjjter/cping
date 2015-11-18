@@ -1,0 +1,1 @@
+A different, CISCO like ping to monitor site. The usefull thing with this script is the possibility to have a look at the story of succesful or not ping.
